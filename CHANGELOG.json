@@ -1,0 +1,54 @@
+{
+  "irVersion": "1.0",
+  "project": "tavus-go",
+  "repository": "https://github.com/plexusone/tavus-go",
+  "versioning": "semver",
+  "commitConvention": "conventional",
+  "maintainers": ["plexusone"],
+  "releases": [
+    {
+      "version": "v0.1.0",
+      "date": "2025-07-06",
+      "commit": "3733f84",
+      "highlights": [
+        { "description": "Initial release of Go SDK for Tavus API with full CVI (Conversational Video Interface) support" },
+        { "description": "Spec-driven development using OpenAPI 3.0.3 and ogen code generation" },
+        { "description": "High-level service wrappers for all 10 Tavus resource types" }
+      ],
+      "added": [
+        { "description": "Comprehensive OpenAPI 3.0.3 spec covering all Tavus API v2 endpoints", "commit": "45ea7b8" },
+        { "description": "ogen-generated API client with type-safe request/response handling", "commit": "1db11a7" },
+        { "description": "SDK client wrapper with functional options (API key, base URL, timeout, HTTP client)", "commit": "3ecd8b3" },
+        { "description": "Environment variable support via `TAVUS_API_KEY`", "commit": "3ecd8b3" },
+        { "description": "SDK version headers (`X-Tavus-SDK-Version`, `X-Tavus-SDK-Lang`)", "commit": "3ecd8b3" },
+        { "description": "`ConversationsService` for real-time video session management", "commit": "3ecd8b3" },
+        { "description": "`PalsService` for Personality AI Layer (PAL) management", "commit": "3ecd8b3" },
+        { "description": "`FacesService` for visual identity management", "commit": "3ecd8b3" },
+        { "description": "`VoicesService` for stock voice listing", "commit": "3ecd8b3" },
+        { "description": "`VideosService` for async video generation", "commit": "3ecd8b3" },
+        { "description": "`ToolsService` for function calling tool management", "commit": "3ecd8b3" },
+        { "description": "`GuardrailsService` for behavioral boundary management", "commit": "3ecd8b3" },
+        { "description": "`ObjectivesService` for conversation goal management", "commit": "3ecd8b3" },
+        { "description": "`DocumentsService` for knowledge base management", "commit": "3ecd8b3" },
+        { "description": "`DeploymentsService` for distribution channel management", "commit": "3ecd8b3" },
+        { "description": "Usage examples: basic conversation, PAL management, tool calling, resource listing", "commit": "895847b" }
+      ],
+      "build": [
+        { "description": "ogen code generation tooling with `generate.sh` script", "commit": "e4dc55d" },
+        { "description": "Post-processing with ogen-fixnull and ogen-fixerror from plexusone/ogen-tools", "commit": "e4dc55d" }
+      ],
+      "tests": [
+        { "description": "Unit tests for client construction, options, and service accessors", "commit": "3350c2a" },
+        { "description": "Integration tests for all 10 services (skips gracefully without `TAVUS_API_KEY`)", "commit": "3350c2a" }
+      ],
+      "documentation": [
+        { "description": "README with installation, quick start, and all service examples", "commit": "7bc4a91" },
+        { "description": "Examples README with usage instructions", "commit": "895847b" }
+      ],
+      "infrastructure": [
+        { "description": "GitHub Actions workflows for CI/CD", "commit": "3733f84" },
+        { "description": "golangci-lint configuration", "commit": "e9176e0" }
+      ]
+    }
+  ]
+}
