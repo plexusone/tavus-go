@@ -30,7 +30,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/plexusone/tavus-go/internal/api"
+	"github.com/plexusone/tavus-go/api"
 )
 
 // Version is the SDK version.

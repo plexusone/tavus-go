@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plexusone/tavus-go/internal/api"
+	"github.com/plexusone/tavus-go/api"
 )
 
 // ConversationsService handles real-time conversation sessions.

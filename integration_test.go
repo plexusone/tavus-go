@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/plexusone/tavus-go/internal/api"
+	"github.com/plexusone/tavus-go/api"
 )
 
 // skipIfNoAPIKey skips the test if TAVUS_API_KEY is not set.

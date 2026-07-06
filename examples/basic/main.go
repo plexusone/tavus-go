@@ -16,7 +16,7 @@ import (
 	"os"
 
 	"github.com/plexusone/tavus-go"
-	"github.com/plexusone/tavus-go/internal/api"
+	"github.com/plexusone/tavus-go/api"
 )
 
 func main() {
