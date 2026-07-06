@@ -79,11 +79,11 @@ Here are a few times that you have helped an individual make a breakthrough in t
 	// Create a conversation with the custom LLM PAL
 	fmt.Println("\n=== Creating Conversation ===")
 	conv, err := client.Conversations().Create(ctx, &api.CreateConversationRequest{
-		FaceID:               faceID,
-		PalID:                pal.PalID.Value,
-		ConversationName:     api.NewOptString("Life Coach Session"),
+		FaceID:                faceID,
+		PalID:                 pal.PalID.Value,
+		ConversationName:      api.NewOptString("Life Coach Session"),
 		ConversationalContext: api.NewOptString("You are about to talk to Keith, who comes to you looking for advice on how to navigate his promotion at work."),
-		CustomGreeting:       api.NewOptString("Hey there Keith, long time no see! How have you been?"),
+		CustomGreeting:        api.NewOptString("Hey there Keith, long time no see! How have you been?"),
 	})
 	if err != nil {
 		log.Fatalf("Failed to create conversation: %v", err)
@@ -97,9 +97,9 @@ Here are a few times that you have helped an individual make a breakthrough in t
 	fmt.Println("\nOpen the conversation URL in your browser to start the session.")
 	fmt.Println("Press Ctrl+C to end the conversation and cleanup.")
 
-	// Wait for user to press Ctrl+C
+	// Wait for user to press Enter
 	fmt.Println("\n=== Press Enter to end conversation and cleanup ===")
-	fmt.Scanln()
+	_, _ = fmt.Scanln()
 
 	// Cleanup
 	fmt.Println("\n=== Cleanup ===")

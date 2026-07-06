@@ -6,20 +6,28 @@
 // The server:
 // - Exposes POST /chat/completions endpoint
 // - Validates API key authentication
-// - Proxies requests to OpenAI (or your own LLM)
+// - Uses omnillm-core for multi-provider LLM support (OpenAI, Anthropic, etc.)
 // - Supports streaming responses
 //
+// Environment variables:
+// - PORT: Server port (default: 8000)
+// - LLM_PROVIDER: Provider name (openai, anthropic, xai, ollama, etc.)
+// - LLM_MODEL: Model to use (e.g., gpt-4o-mini, claude-3-5-haiku)
+// - OPENAI_API_KEY: OpenAI API key (when using openai provider)
+// - ANTHROPIC_API_KEY: Anthropic API key (when using anthropic provider)
+// - XAI_API_KEY: X.AI API key (when using xai provider)
+// - OLLAMA_BASE_URL: Ollama base URL (when using ollama provider)
+//
 // Usage:
-//   1. Start this server: go run main.go
-//   2. Expose via ngrok: ngrok http 8000
-//   3. Configure your Tavus PAL to use the ngrok URL as the LLM base_url
+//  1. Start this server: LLM_PROVIDER=openai OPENAI_API_KEY=... go run main.go
+//  2. Expose via ngrok: ngrok http 8000
+//  3. Configure your Tavus PAL to use the ngrok URL as the LLM base_url
 //
 // Based on: github.com/Tavus-Engineering/tavus-examples/cvi-custom-llm-with-backend
 package main
 
 import (
-	"bufio"
-	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,22 +36,24 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	omnillm "github.com/plexusone/omnillm-core"
+	"github.com/plexusone/omnillm-core/provider"
 )
 
-// ChatCompletionRequest represents the incoming request
-type ChatCompletionRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-	Stream   bool      `json:"stream"`
+// Global LLM client
+var llmClient *omnillm.ChatClient
+
+// Config holds server configuration
+type Config struct {
+	Port     string
+	Provider omnillm.ProviderName
+	Model    string
+	APIKey   string
+	BaseURL  string
 }
 
-// Message represents a chat message
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-// ChatCompletionChunk represents a streaming response chunk
+// ChatCompletionChunk represents a streaming response chunk (OpenAI format)
 type ChatCompletionChunk struct {
 	ID      string   `json:"id"`
 	Object  string   `json:"object"`
@@ -54,9 +64,9 @@ type ChatCompletionChunk struct {
 
 // Choice represents a completion choice
 type Choice struct {
-	Index        int          `json:"index"`
-	Delta        Delta        `json:"delta"`
-	FinishReason *string      `json:"finish_reason"`
+	Index        int     `json:"index"`
+	Delta        Delta   `json:"delta"`
+	FinishReason *string `json:"finish_reason"`
 }
 
 // Delta represents the delta content in streaming
@@ -66,23 +76,110 @@ type Delta struct {
 }
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
+	config := loadConfig()
+
+	// Initialize LLM client
+	var err error
+	llmClient, err = createLLMClient(config)
+	if err != nil {
+		log.Printf("Warning: Failed to create LLM client: %v", err)
+		log.Println("Server will return mock responses")
+	} else {
+		log.Printf("LLM client initialized: provider=%s, model=%s", config.Provider, config.Model)
 	}
 
 	http.HandleFunc("/chat/completions", handleChatCompletions)
 	http.HandleFunc("/health", handleHealth)
 
-	log.Printf("Custom LLM server starting on port %s", port)
+	log.Printf("Custom LLM server starting on port %s", config.Port)
 	log.Printf("Endpoint: POST /chat/completions")
 	log.Printf("Health: GET /health")
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+
+	server := &http.Server{
+		Addr:         ":" + config.Port,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 120 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
+}
+
+func loadConfig() Config {
+	config := Config{
+		Port:     getEnvDefault("PORT", "8000"),
+		Provider: omnillm.ProviderName(getEnvDefault("LLM_PROVIDER", "openai")),
+		Model:    getEnvDefault("LLM_MODEL", ""),
+	}
+
+	// Get API key and base URL based on provider
+	switch config.Provider {
+	case omnillm.ProviderNameOpenAI:
+		config.APIKey = os.Getenv("OPENAI_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelGPT4oMini
+		}
+	case omnillm.ProviderNameAnthropic:
+		config.APIKey = os.Getenv("ANTHROPIC_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelClaude3_5Haiku
+		}
+	case omnillm.ProviderNameXAI:
+		config.APIKey = os.Getenv("XAI_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelGrok3Mini
+		}
+	case omnillm.ProviderNameOllama:
+		config.BaseURL = getEnvDefault("OLLAMA_BASE_URL", "http://localhost:11434")
+		if config.Model == "" {
+			config.Model = omnillm.ModelOllamaLlama3_8B
+		}
+	case omnillm.ProviderNameKimi:
+		config.APIKey = os.Getenv("KIMI_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelMoonshotV1_8K
+		}
+	case omnillm.ProviderNameGLM:
+		config.APIKey = os.Getenv("GLM_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelGLM4_5Flash
+		}
+	case omnillm.ProviderNameQwen:
+		config.APIKey = os.Getenv("QWEN_API_KEY")
+		if config.Model == "" {
+			config.Model = omnillm.ModelQwenFlash
+		}
+	}
+
+	return config
+}
+
+func getEnvDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func createLLMClient(config Config) (*omnillm.ChatClient, error) {
+	// Ollama doesn't require an API key
+	if config.Provider != omnillm.ProviderNameOllama && config.APIKey == "" {
+		return nil, fmt.Errorf("no API key for provider %s", config.Provider)
+	}
+
+	return omnillm.NewClient(omnillm.ClientConfig{
+		Providers: []omnillm.ProviderConfig{
+			{
+				Provider: config.Provider,
+				APIKey:   config.APIKey,
+				BaseURL:  config.BaseURL,
+			},
+		},
+	})
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	_, _ = w.Write([]byte("OK"))
 }
 
 func handleChatCompletions(w http.ResponseWriter, r *http.Request) {
@@ -92,8 +189,7 @@ func handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log request info
-	log.Printf("Request: %s %s", r.Method, r.URL.Path)
-	log.Printf("Headers: %v", r.Header)
+	log.Printf("Request: %s %s", r.Method, r.URL.Path) //nolint:gosec // G706: URL path is safe to log
 
 	// Authenticate request
 	if !authenticateRequest(r) {
@@ -101,29 +197,25 @@ func handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	log.Println("Authentication successful")
 
 	// Parse request body
-	var req ChatCompletionRequest
+	var req provider.ChatCompletionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("Failed to parse request: %v", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Messages: %+v", req.Messages)
+	log.Printf("Model: %s, Messages: %d", req.Model, len(req.Messages))
 
-	// Check for OpenAI API key
-	openaiKey := os.Getenv("OPENAI_API_KEY")
-	if openaiKey == "" {
-		// If no OpenAI key, return a mock response
-		log.Println("No OPENAI_API_KEY, returning mock response")
+	// Use mock response if no LLM client
+	if llmClient == nil {
 		handleMockResponse(w, req)
 		return
 	}
 
-	// Proxy to OpenAI
-	handleOpenAIProxy(w, req, openaiKey)
+	// Handle streaming request via omnillm
+	handleOmnillmStream(w, req)
 }
 
 func authenticateRequest(r *http.Request) bool {
@@ -138,14 +230,10 @@ func authenticateRequest(r *http.Request) bool {
 
 	// Check X-API-Key header
 	apiKey := r.Header.Get("X-API-Key")
-	if apiKey != "" {
-		return true
-	}
-
-	return false
+	return apiKey != ""
 }
 
-func handleMockResponse(w http.ResponseWriter, req ChatCompletionRequest) {
+func handleMockResponse(w http.ResponseWriter, req provider.ChatCompletionRequest) {
 	// Set headers for streaming
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -158,16 +246,22 @@ func handleMockResponse(w http.ResponseWriter, req ChatCompletionRequest) {
 	}
 
 	// Mock response content
-	response := "Hello! I'm a mock LLM response. In production, this would be powered by your actual LLM backend. How can I help you today?"
+	response := "Hello! I'm a mock LLM response. Configure LLM_PROVIDER and the appropriate API key to use a real LLM backend."
+
+	// Use the requested model or fallback to mock-model
+	model := req.Model
+	if model == "" {
+		model = "mock-model"
+	}
 
 	// Stream the response word by word
 	words := strings.Fields(response)
 	for i, word := range words {
 		chunk := ChatCompletionChunk{
-			ID:      "mock-" + fmt.Sprintf("%d", time.Now().UnixNano()),
+			ID:      fmt.Sprintf("mock-%d", time.Now().UnixNano()),
 			Object:  "chat.completion.chunk",
 			Created: time.Now().Unix(),
-			Model:   "mock-model",
+			Model:   model,
 			Choices: []Choice{
 				{
 					Index: 0,
@@ -191,38 +285,17 @@ func handleMockResponse(w http.ResponseWriter, req ChatCompletionRequest) {
 	flusher.Flush()
 }
 
-func handleOpenAIProxy(w http.ResponseWriter, req ChatCompletionRequest, apiKey string) {
-	// Prepare OpenAI request
-	req.Stream = true
-	req.Model = "gpt-4o-mini" // Default model
+func handleOmnillmStream(w http.ResponseWriter, req provider.ChatCompletionRequest) {
+	ctx := context.Background()
 
-	body, _ := json.Marshal(req)
-	openaiReq, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewReader(body))
+	// Create streaming request
+	stream, err := llmClient.CreateChatCompletionStream(ctx, &req)
 	if err != nil {
-		log.Printf("Failed to create OpenAI request: %v", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		log.Printf("Failed to create stream: %v", err)
+		http.Error(w, "LLM error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	openaiReq.Header.Set("Content-Type", "application/json")
-	openaiReq.Header.Set("Authorization", "Bearer "+apiKey)
-
-	// Make request to OpenAI
-	client := &http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Do(openaiReq)
-	if err != nil {
-		log.Printf("OpenAI request failed: %v", err)
-		http.Error(w, "Upstream error", http.StatusBadGateway)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		log.Printf("OpenAI error: %s", string(body))
-		http.Error(w, "Upstream error", resp.StatusCode)
-		return
-	}
+	defer stream.Close()
 
 	// Set headers for streaming
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -235,13 +308,45 @@ func handleOpenAIProxy(w http.ResponseWriter, req ChatCompletionRequest, apiKey 
 		return
 	}
 
-	// Stream response from OpenAI to client
-	scanner := bufio.NewScanner(resp.Body)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line != "" {
-			fmt.Fprintf(w, "%s\n", line)
-			flusher.Flush()
+	// Stream response chunks
+	for {
+		chunk, err := stream.Recv()
+		if err == io.EOF {
+			break
 		}
+		if err != nil {
+			log.Printf("Stream error: %v", err)
+			break
+		}
+
+		// Convert to OpenAI-compatible format
+		openaiChunk := ChatCompletionChunk{
+			ID:      chunk.ID,
+			Object:  "chat.completion.chunk",
+			Created: chunk.Created,
+			Model:   chunk.Model,
+			Choices: make([]Choice, len(chunk.Choices)),
+		}
+
+		for i, c := range chunk.Choices {
+			openaiChunk.Choices[i] = Choice{
+				Index:        c.Index,
+				FinishReason: c.FinishReason,
+			}
+			if c.Delta != nil {
+				openaiChunk.Choices[i].Delta = Delta{
+					Content: c.Delta.Content,
+					Role:    string(c.Delta.Role),
+				}
+			}
+		}
+
+		data, _ := json.Marshal(openaiChunk)
+		fmt.Fprintf(w, "data: %s\n\n", data)
+		flusher.Flush()
 	}
+
+	// Send done signal
+	fmt.Fprintf(w, "data: [DONE]\n\n")
+	flusher.Flush()
 }
