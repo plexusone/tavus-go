@@ -7,6 +7,29 @@
   "maintainers": ["plexusone"],
   "releases": [
     {
+      "version": "v0.2.0",
+      "date": "2025-07-06",
+      "commit": "d053186",
+      "highlights": [
+        { "description": "Public API types for external package integration" },
+        { "description": "Multi-provider LLM support via omnillm-core in examples" },
+        { "description": "Custom LLM backend examples for Tavus integration" }
+      ],
+      "breaking": [
+        { "description": "API types moved from `internal/api` to `api` - import path changed", "commit": "d053186" }
+      ],
+      "added": [
+        { "description": "Custom LLM backend example showing PAL configuration with external LLM", "commit": "e8f568e" },
+        { "description": "OpenAI-compatible custom LLM server example", "commit": "e8f568e" }
+      ],
+      "changed": [
+        { "description": "Custom LLM server example now uses omnillm-core for multi-provider support (OpenAI, Anthropic, X.AI, Ollama, etc.)", "commit": "770434b" }
+      ],
+      "refactored": [
+        { "description": "Moved ogen-generated API types from `internal/api` to `api` for external package access", "commit": "d053186" }
+      ]
+    },
+    {
       "version": "v0.1.0",
       "date": "2025-07-06",
       "commit": "3733f84",
