@@ -133,7 +133,7 @@ func (c *sdkHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	req.Header.Set("X-Tavus-SDK-Version", Version)
 	req.Header.Set("X-Tavus-SDK-Lang", "go")
 
-	return c.client.Do(req)
+	return c.client.Do(req) //nolint:gosec // G704: URL from SDK base URL configuration
 }
 
 // API returns the underlying ogen-generated API client for advanced usage.
