@@ -5,6 +5,14 @@
   "versioning": "semver",
   "commitConvention": "conventional",
   "maintainers": ["plexusone"],
+  "unreleased": {
+    "documentation": [
+      { "description": "Interactive API reference via Scalar at https://plexusone.github.io/tavus-go/", "commit": "627bc06" }
+    ],
+    "infrastructure": [
+      { "description": "GitHub Actions workflow for GitHub Pages deployment", "commit": "627bc06" }
+    ]
+  },
   "releases": [
     {
       "version": "v0.2.0",
