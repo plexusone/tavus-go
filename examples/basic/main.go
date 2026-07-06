@@ -76,7 +76,7 @@ func main() {
 
 	fmt.Printf("\nConversation created!\n")
 	fmt.Printf("  ID: %s\n", conv.ConversationID.Value)
-	fmt.Printf("  URL: %s\n", conv.ConversationURL.Value)
+	fmt.Printf("  URL: %s\n", conv.ConversationURL.Value.String())
 	fmt.Printf("  Status: %s\n", conv.Status.Value)
 
 	// End the conversation (cleanup)
