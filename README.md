@@ -4,6 +4,7 @@
 [![Go Lint][go-lint-svg]][go-lint-url]
 [![Go SAST][go-sast-svg]][go-sast-url]
 [![Docs][docs-godoc-svg]][docs-godoc-url]
+[![API Reference][api-ref-svg]][api-ref-url]
 [![Visualization][viz-svg]][viz-url]
 [![License][license-svg]][license-url]
 
@@ -15,6 +16,8 @@
  [go-sast-url]: https://github.com/plexusone/tavus-go/actions/workflows/go-sast-codeql.yaml
  [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/plexusone/tavus-go
  [docs-godoc-url]: https://pkg.go.dev/github.com/plexusone/tavus-go
+ [api-ref-svg]: https://img.shields.io/badge/API-Reference-blue.svg
+ [api-ref-url]: https://plexusone.github.io/tavus-go/
  [docs-mkdoc-svg]: https://img.shields.io/badge/Go-dev%20guide-blue.svg
  [docs-mkdoc-url]: https://plexusone.dev/tavus-go
  [viz-svg]: https://img.shields.io/badge/Go-visualizaton-blue.svg

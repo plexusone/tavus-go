@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tavus API Reference</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive API documentation for Tavus - Conversational Video Interface" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <script
+    id="api-reference"
+    data-url="./openapi.yaml"
+    data-configuration='{
+      "theme": "kepler",
+      "layout": "modern",
+      "darkMode": true,
+      "hideDarkModeToggle": false,
+      "searchHotKey": "k",
+      "metaData": {
+        "title": "Tavus API",
+        "description": "Go SDK for Tavus Conversational Video Interface"
+      },
+      "servers": [
+        {
+          "url": "https://api.tavus.io",
+          "description": "Production"
+        }
+      ]
+    }'
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>
