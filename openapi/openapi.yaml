@@ -1,0 +1,2287 @@
+openapi: 3.0.3
+info:
+  title: Tavus API
+  description: |
+    Tavus is an AI video research company making personalized video possible at scale.
+    This API provides access to conversational video interfaces (CVI), video generation,
+    and avatar management.
+  version: 2.0.0
+  contact:
+    name: Tavus Support
+    url: https://www.tavus.io
+  license:
+    name: Proprietary
+    url: https://www.tavus.io/terms
+
+servers:
+  - url: https://tavusapi.com
+    description: Production API
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Conversations
+    description: Real-time conversational video sessions
+  - name: PALs
+    description: Personality AI Layer - behavior and knowledge configuration
+  - name: Faces
+    description: Visual identity management (avatar appearances)
+  - name: Voices
+    description: Stock voices for image-to-face training
+  - name: Videos
+    description: Async video generation
+  - name: Tools
+    description: Function calling and integrations
+  - name: Guardrails
+    description: Behavioral boundaries and safety constraints
+  - name: Objectives
+    description: Measurable conversation goals
+  - name: Documents
+    description: Knowledge base document management
+  - name: Deployments
+    description: Distribution channels for PALs
+
+paths:
+  # ============================================================================
+  # CONVERSATIONS
+  # ============================================================================
+  /v2/conversations:
+    post:
+      operationId: createConversation
+      tags: [Conversations]
+      summary: Create a conversation
+      description: |
+        Creates a new real-time conversation session with a PAL.
+        The conversation URL can be used to join the video call.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '200':
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateConversationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    get:
+      operationId: listConversations
+      tags: [Conversations]
+      summary: List all conversations
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListConversationsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/conversations/{conversation_id}:
+    get:
+      operationId: getConversation
+      tags: [Conversations]
+      summary: Get a conversation
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+      responses:
+        '200':
+          description: Conversation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteConversation
+      tags: [Conversations]
+      summary: Delete a conversation
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+      responses:
+        '204':
+          description: Conversation deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/conversations/{conversation_id}/end:
+    post:
+      operationId: endConversation
+      tags: [Conversations]
+      summary: End a conversation
+      description: Gracefully ends an active conversation session.
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+      responses:
+        '200':
+          description: Conversation ended
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # PALs (Personality AI Layer)
+  # ============================================================================
+  /v2/pals:
+    post:
+      operationId: createPal
+      tags: [PALs]
+      summary: Create a PAL
+      description: |
+        Creates a new PAL (Personality AI Layer) that defines the avatar's
+        behavior, knowledge, and configuration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePalRequest'
+      responses:
+        '200':
+          description: PAL created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePalResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listPals
+      tags: [PALs]
+      summary: List all PALs
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of PALs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPalsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/pals/{pal_id}:
+    get:
+      operationId: getPal
+      tags: [PALs]
+      summary: Get a PAL
+      parameters:
+        - $ref: '#/components/parameters/PalId'
+      responses:
+        '200':
+          description: PAL details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pal'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updatePal
+      tags: [PALs]
+      summary: Update a PAL
+      parameters:
+        - $ref: '#/components/parameters/PalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePalRequest'
+      responses:
+        '200':
+          description: PAL updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pal'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deletePal
+      tags: [PALs]
+      summary: Delete a PAL
+      parameters:
+        - $ref: '#/components/parameters/PalId'
+      responses:
+        '204':
+          description: PAL deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/pals/{pal_id}/tools:
+    post:
+      operationId: attachToolToPal
+      tags: [PALs]
+      summary: Attach a tool to a PAL
+      description: Attaches an existing tool to a PAL. Maximum 50 tools per PAL.
+      parameters:
+        - $ref: '#/components/parameters/PalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tool_id
+              properties:
+                tool_id:
+                  type: string
+                  description: The ID of the tool to attach
+      responses:
+        '200':
+          description: Tool attached
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # FACES
+  # ============================================================================
+  /v2/faces:
+    post:
+      operationId: createFace
+      tags: [Faces]
+      summary: Create a face
+      description: |
+        Creates a new face by training on a video or image.
+        Training is asynchronous - use the callback_url or poll the face status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFaceRequest'
+      responses:
+        '200':
+          description: Face training started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFaceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listFaces
+      tags: [Faces]
+      summary: List all faces
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of faces
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFacesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/faces/{face_id}:
+    get:
+      operationId: getFace
+      tags: [Faces]
+      summary: Get a face
+      parameters:
+        - $ref: '#/components/parameters/FaceId'
+      responses:
+        '200':
+          description: Face details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Face'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteFace
+      tags: [Faces]
+      summary: Delete a face
+      parameters:
+        - $ref: '#/components/parameters/FaceId'
+      responses:
+        '204':
+          description: Face deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/faces/{face_id}/name:
+    patch:
+      operationId: renameFace
+      tags: [Faces]
+      summary: Rename a face
+      parameters:
+        - $ref: '#/components/parameters/FaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - face_name
+              properties:
+                face_name:
+                  type: string
+      responses:
+        '200':
+          description: Face renamed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # VOICES
+  # ============================================================================
+  /v2/voices:
+    get:
+      operationId: listVoices
+      tags: [Voices]
+      summary: List available voices
+      description: Lists stock voices available for image-to-face training.
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by voice name (case-insensitive substring match)
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort order
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag (case-insensitive)
+      responses:
+        '200':
+          description: List of voices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVoicesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # VIDEOS
+  # ============================================================================
+  /v2/videos:
+    post:
+      operationId: createVideo
+      tags: [Videos]
+      summary: Generate a video
+      description: |
+        Creates a new video using a face and script or audio.
+        Video generation is asynchronous.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVideoRequest'
+      responses:
+        '200':
+          description: Video generation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateVideoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listVideos
+      tags: [Videos]
+      summary: List all videos
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVideosResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/videos/{video_id}:
+    get:
+      operationId: getVideo
+      tags: [Videos]
+      summary: Get a video
+      parameters:
+        - $ref: '#/components/parameters/VideoId'
+      responses:
+        '200':
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteVideo
+      tags: [Videos]
+      summary: Delete a video
+      parameters:
+        - $ref: '#/components/parameters/VideoId'
+      responses:
+        '204':
+          description: Video deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/videos/{video_id}/name:
+    patch:
+      operationId: renameVideo
+      tags: [Videos]
+      summary: Rename a video
+      parameters:
+        - $ref: '#/components/parameters/VideoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - video_name
+              properties:
+                video_name:
+                  type: string
+      responses:
+        '200':
+          description: Video renamed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # TOOLS
+  # ============================================================================
+  /v2/tools:
+    post:
+      operationId: createTool
+      tags: [Tools]
+      summary: Create a tool
+      description: Creates a function calling tool that can be attached to PALs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateToolRequest'
+      responses:
+        '200':
+          description: Tool created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listTools
+      tags: [Tools]
+      summary: List all tools
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListToolsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/tools/{tool_id}:
+    get:
+      operationId: getTool
+      tags: [Tools]
+      summary: Get a tool
+      parameters:
+        - $ref: '#/components/parameters/ToolId'
+      responses:
+        '200':
+          description: Tool details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateTool
+      tags: [Tools]
+      summary: Update a tool
+      parameters:
+        - $ref: '#/components/parameters/ToolId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateToolRequest'
+      responses:
+        '200':
+          description: Tool updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteTool
+      tags: [Tools]
+      summary: Delete a tool
+      parameters:
+        - $ref: '#/components/parameters/ToolId'
+      responses:
+        '204':
+          description: Tool deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # GUARDRAILS
+  # ============================================================================
+  /v2/guardrails:
+    post:
+      operationId: createGuardrail
+      tags: [Guardrails]
+      summary: Create a guardrail
+      description: Creates a behavioral boundary for PAL conversations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGuardrailRequest'
+      responses:
+        '200':
+          description: Guardrail created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardrail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listGuardrails
+      tags: [Guardrails]
+      summary: List all guardrails
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of guardrails
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGuardrailsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/guardrails/{guardrail_id}:
+    get:
+      operationId: getGuardrail
+      tags: [Guardrails]
+      summary: Get a guardrail
+      parameters:
+        - $ref: '#/components/parameters/GuardrailId'
+      responses:
+        '200':
+          description: Guardrail details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardrail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateGuardrail
+      tags: [Guardrails]
+      summary: Update a guardrail
+      parameters:
+        - $ref: '#/components/parameters/GuardrailId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGuardrailRequest'
+      responses:
+        '200':
+          description: Guardrail updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardrail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteGuardrail
+      tags: [Guardrails]
+      summary: Delete a guardrail
+      parameters:
+        - $ref: '#/components/parameters/GuardrailId'
+      responses:
+        '204':
+          description: Guardrail deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # OBJECTIVES
+  # ============================================================================
+  /v2/objectives:
+    post:
+      operationId: createObjectives
+      tags: [Objectives]
+      summary: Create objectives
+      description: Creates measurable goals for PAL conversations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateObjectivesRequest'
+      responses:
+        '200':
+          description: Objectives created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateObjectivesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listObjectives
+      tags: [Objectives]
+      summary: List all objectives
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of objectives
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListObjectivesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/objectives/{objectives_id}:
+    get:
+      operationId: getObjectives
+      tags: [Objectives]
+      summary: Get objectives
+      parameters:
+        - $ref: '#/components/parameters/ObjectivesId'
+      responses:
+        '200':
+          description: Objectives details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Objectives'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateObjectives
+      tags: [Objectives]
+      summary: Update objectives
+      parameters:
+        - $ref: '#/components/parameters/ObjectivesId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateObjectivesRequest'
+      responses:
+        '200':
+          description: Objectives updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Objectives'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteObjectives
+      tags: [Objectives]
+      summary: Delete objectives
+      parameters:
+        - $ref: '#/components/parameters/ObjectivesId'
+      responses:
+        '204':
+          description: Objectives deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # DOCUMENTS
+  # ============================================================================
+  /v2/documents:
+    post:
+      operationId: createDocument
+      tags: [Documents]
+      summary: Upload a document
+      description: |
+        Uploads a document to the knowledge base.
+        Supported formats: PDF, TXT, DOCX, DOC, PNG, JPG, PPTX, CSV, XLSX (max 50MB).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentRequest'
+      responses:
+        '200':
+          description: Document upload started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listDocuments
+      tags: [Documents]
+      summary: List all documents
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDocumentsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/documents/{document_id}:
+    get:
+      operationId: getDocument
+      tags: [Documents]
+      summary: Get a document
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Document details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateDocument
+      tags: [Documents]
+      summary: Update document metadata
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentRequest'
+      responses:
+        '200':
+          description: Document updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteDocument
+      tags: [Documents]
+      summary: Delete a document
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '204':
+          description: Document deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # DEPLOYMENTS
+  # ============================================================================
+  /v2/deployments:
+    post:
+      operationId: createDeployment
+      tags: [Deployments]
+      summary: Create a deployment
+      description: Creates a distribution channel for a PAL (widget, embed, or landing page).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeploymentRequest'
+      responses:
+        '200':
+          description: Deployment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      operationId: listDeployments
+      tags: [Deployments]
+      summary: List all deployments
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: List of deployments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDeploymentsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v2/deployments/{deployment_id}:
+    get:
+      operationId: getDeployment
+      tags: [Deployments]
+      summary: Get a deployment
+      parameters:
+        - $ref: '#/components/parameters/DeploymentId'
+      responses:
+        '200':
+          description: Deployment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateDeployment
+      tags: [Deployments]
+      summary: Update a deployment
+      parameters:
+        - $ref: '#/components/parameters/DeploymentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeploymentRequest'
+      responses:
+        '200':
+          description: Deployment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: deleteDeployment
+      tags: [Deployments]
+      summary: Delete a deployment
+      parameters:
+        - $ref: '#/components/parameters/DeploymentId'
+      responses:
+        '204':
+          description: Deployment deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ==============================================================================
+# COMPONENTS
+# ==============================================================================
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Tavus API key
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      description: Maximum number of items to return
+
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number
+
+    ConversationId:
+      name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique conversation identifier
+
+    PalId:
+      name: pal_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique PAL identifier
+
+    FaceId:
+      name: face_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique face identifier
+
+    VideoId:
+      name: video_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique video identifier
+
+    ToolId:
+      name: tool_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique tool identifier
+
+    GuardrailId:
+      name: guardrail_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique guardrail identifier
+
+    ObjectivesId:
+      name: objectives_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique objectives identifier
+
+    DocumentId:
+      name: document_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique document identifier
+
+    DeploymentId:
+      name: deployment_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique deployment identifier
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimited:
+      description: Too many requests - rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    Timestamp:
+      type: string
+      format: date-time
+
+    # ==========================================================================
+    # CONVERSATION SCHEMAS
+    # ==========================================================================
+    CreateConversationRequest:
+      type: object
+      required:
+        - pal_id
+        - face_id
+      properties:
+        pal_id:
+          type: string
+          description: PAL to use for the conversation
+        face_id:
+          type: string
+          description: Face to use for the conversation
+        conversation_name:
+          type: string
+          description: Optional name for the conversation
+        properties:
+          $ref: '#/components/schemas/ConversationProperties'
+        conversational_context:
+          type: string
+          description: Additional context for the conversation
+        custom_greeting:
+          type: string
+          description: Custom greeting message
+        audio_only:
+          type: boolean
+          default: false
+          description: Voice-only mode (no video)
+        meeting_url:
+          type: string
+          description: Google Meet URL to join
+        callback_url:
+          type: string
+          format: uri
+          description: Webhook URL for conversation events
+        require_auth:
+          type: boolean
+          default: false
+          description: Require authentication to join
+        memory_stores:
+          type: array
+          items:
+            type: string
+          description: Memory store IDs for persistent context
+        document_ids:
+          type: array
+          items:
+            type: string
+          description: Knowledge base document IDs
+        document_tags:
+          type: array
+          items:
+            type: string
+          description: Document category filters
+        extra_payload:
+          type: object
+          additionalProperties: true
+          description: Additional custom fields
+
+    ConversationProperties:
+      type: object
+      properties:
+        max_call_duration:
+          type: integer
+          default: 3600
+          description: Timeout in seconds
+        language:
+          type: string
+          description: Language code or "multilingual" for auto-detect
+        enable_recording:
+          type: boolean
+          default: false
+        enable_closed_captions:
+          type: boolean
+          default: false
+        apply_greenscreen:
+          type: boolean
+          default: false
+        livekit_ws_url:
+          type: string
+          description: LiveKit WebSocket URL for custom transport
+        livekit_room_token:
+          type: string
+          description: LiveKit JWT token for custom transport
+
+    CreateConversationResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+        conversation_url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [active, ended]
+        meeting_token:
+          type: string
+          description: Auth token if require_auth was true
+
+    Conversation:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+        conversation_name:
+          type: string
+        conversation_url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [active, ended]
+        pal_id:
+          type: string
+        face_id:
+          type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        ended_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListConversationsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # PAL SCHEMAS
+    # ==========================================================================
+    CreatePalRequest:
+      type: object
+      required:
+        - pal_name
+        - default_face_id
+      properties:
+        pal_name:
+          type: string
+          description: Name for the PAL
+        default_face_id:
+          type: string
+          description: Default face for this PAL
+        system_prompt:
+          type: string
+          description: LLM system instructions (required unless pipeline_mode is echo)
+        pipeline_mode:
+          type: string
+          enum: [full, echo]
+          default: full
+          description: Processing mode
+        document_ids:
+          type: array
+          items:
+            type: string
+          description: Knowledge base document IDs
+        document_tags:
+          type: array
+          items:
+            type: string
+          description: Document category tags
+        objectives_id:
+          type: string
+          description: Objectives configuration ID
+        guardrail_ids:
+          type: array
+          items:
+            type: string
+          maxItems: 50
+          description: Guardrail IDs to apply
+        guardrail_tags:
+          type: array
+          items:
+            type: string
+          description: Guardrail category tags
+        layers:
+          $ref: '#/components/schemas/PalLayers'
+
+    PalLayers:
+      type: object
+      properties:
+        perception:
+          $ref: '#/components/schemas/PerceptionLayer'
+        stt:
+          $ref: '#/components/schemas/SttLayer'
+        conversational_flow:
+          $ref: '#/components/schemas/ConversationalFlowLayer'
+        llm:
+          $ref: '#/components/schemas/LlmLayer'
+        tts:
+          $ref: '#/components/schemas/TtsLayer'
+        transport:
+          $ref: '#/components/schemas/TransportLayer'
+
+    PerceptionLayer:
+      type: object
+      properties:
+        perception_model:
+          type: string
+          enum: [raven-1, raven-0, 'off']
+          default: 'off'
+        visual_awareness_queries:
+          type: array
+          items:
+            type: string
+        audio_awareness_queries:
+          type: array
+          items:
+            type: string
+
+    SttLayer:
+      type: object
+      properties:
+        stt_engine:
+          type: string
+        hotwords:
+          type: string
+          description: Comma-separated hotwords or JSON array string
+
+    ConversationalFlowLayer:
+      type: object
+      properties:
+        turn_taking_enabled:
+          type: boolean
+          default: true
+        interruptibility:
+          type: string
+        wake_phrases:
+          type: array
+          items:
+            type: string
+
+    LlmLayer:
+      type: object
+      properties:
+        model:
+          type: string
+        base_url:
+          type: string
+        api_key:
+          type: string
+        extra_body:
+          type: object
+          properties:
+            temperature:
+              type: number
+            top_p:
+              type: number
+
+    TtsLayer:
+      type: object
+      properties:
+        tts_engine:
+          type: string
+        external_voice_id:
+          type: string
+        tts_model_name:
+          type: string
+        voice_settings:
+          type: object
+          additionalProperties: true
+
+    TransportLayer:
+      type: object
+      properties:
+        transport_type:
+          type: string
+          description: Transport type (e.g., livekit, daily)
+
+    CreatePalResponse:
+      type: object
+      properties:
+        pal_id:
+          type: string
+
+    Pal:
+      type: object
+      properties:
+        pal_id:
+          type: string
+        pal_name:
+          type: string
+        default_face_id:
+          type: string
+        system_prompt:
+          type: string
+        pipeline_mode:
+          type: string
+        document_ids:
+          type: array
+          items:
+            type: string
+        document_tags:
+          type: array
+          items:
+            type: string
+        layers:
+          $ref: '#/components/schemas/PalLayers'
+        conferencing_email:
+          type: string
+          format: email
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    UpdatePalRequest:
+      type: object
+      properties:
+        pal_name:
+          type: string
+        default_face_id:
+          type: string
+        system_prompt:
+          type: string
+        document_ids:
+          type: array
+          items:
+            type: string
+        document_tags:
+          type: array
+          items:
+            type: string
+        guardrail_ids:
+          type: array
+          items:
+            type: string
+        layers:
+          $ref: '#/components/schemas/PalLayers'
+
+    ListPalsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pal'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # FACE SCHEMAS
+    # ==========================================================================
+    CreateFaceRequest:
+      type: object
+      properties:
+        face_name:
+          type: string
+          description: Name for the face
+        train_video_url:
+          type: string
+          format: uri
+          description: Video URL for training (presigned S3 or direct download)
+        train_image_url:
+          type: string
+          format: uri
+          description: Image URL for training (alternative to video)
+        voice_name:
+          type: string
+          description: Stock voice slug (required for image training)
+        model_name:
+          type: string
+          default: phoenix-4
+          description: Model version
+        auto_fix_training_image:
+          type: boolean
+          default: false
+          description: Auto-adjust image quality
+        callback_url:
+          type: string
+          format: uri
+          description: Webhook for training completion
+        properties:
+          type: object
+          properties:
+            background_green_screen:
+              type: boolean
+              default: false
+
+    CreateFaceResponse:
+      type: object
+      properties:
+        face_id:
+          type: string
+        status:
+          type: string
+          enum: [started, completed, error]
+
+    Face:
+      type: object
+      properties:
+        face_id:
+          type: string
+        face_name:
+          type: string
+        status:
+          type: string
+          enum: [started, processing, completed, error]
+        training_progress:
+          type: string
+          description: Training progress percentage as string
+        error_message:
+          type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListFacesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Face'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # VOICE SCHEMAS
+    # ==========================================================================
+    Voice:
+      type: object
+      properties:
+        voice_name:
+          type: string
+          description: Voice slug identifier
+        face_id:
+          type: string
+        audio_url:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tag_name:
+                type: string
+
+    ListVoicesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Voice'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # VIDEO SCHEMAS
+    # ==========================================================================
+    CreateVideoRequest:
+      type: object
+      required:
+        - replica_id
+      properties:
+        replica_id:
+          type: string
+          description: Face ID to use (legacy name, maps to face_id)
+        script:
+          type: string
+          description: Text for audio generation
+        audio_url:
+          type: string
+          format: uri
+          description: Link to audio file (.wav or .mp3)
+        video_name:
+          type: string
+        background_url:
+          type: string
+          format: uri
+          description: Website URL to record as background
+        background_source_url:
+          type: string
+          format: uri
+          description: Direct video file link for background
+        callback_url:
+          type: string
+          format: uri
+        fast:
+          type: boolean
+          default: false
+          description: Faster generation (disables some features)
+        transparent_background:
+          type: boolean
+          default: false
+          description: WebM with transparency (requires fast=true)
+        watermark_image_url:
+          type: string
+          format: uri
+        properties:
+          type: object
+          properties:
+            background_scroll_type:
+              type: string
+              enum: [human, smooth]
+            background_scroll_depth:
+              type: string
+              enum: [middle, bottom]
+            background_scroll_return:
+              type: string
+              enum: [return, halt]
+            start_with_wave:
+              type: boolean
+              default: false
+
+    CreateVideoResponse:
+      type: object
+      properties:
+        video_id:
+          type: string
+        video_name:
+          type: string
+        status:
+          type: string
+          enum: [queued, generating, ready, deleted, error]
+        hosted_url:
+          type: string
+          format: uri
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    Video:
+      type: object
+      properties:
+        video_id:
+          type: string
+        video_name:
+          type: string
+        status:
+          type: string
+          enum: [queued, generating, ready, deleted, error]
+        download_url:
+          type: string
+          format: uri
+        stream_url:
+          type: string
+          format: uri
+        hosted_url:
+          type: string
+          format: uri
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListVideosResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Video'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # TOOL SCHEMAS
+    # ==========================================================================
+    CreateToolRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          maxLength: 64
+          pattern: '^[a-zA-Z0-9_]+$'
+          description: Function identifier
+        description:
+          type: string
+          maxLength: 10000
+          description: Natural language explanation
+        parameters:
+          type: object
+          additionalProperties: true
+          description: JSON Schema for tool arguments
+        delivery:
+          type: object
+          properties:
+            app_message:
+              type: boolean
+              default: true
+            api:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                auth_type:
+                  type: string
+                  enum: [bearer, basic, api_key, hmac, oauth2]
+                auth_token:
+                  type: string
+                headers:
+                  type: object
+                  additionalProperties:
+                    type: string
+        trigger_type:
+          type: string
+          enum: [in_call, post_call]
+          default: in_call
+        origin:
+          type: string
+          enum: [llm, vision, audio]
+          default: llm
+        on_call:
+          type: string
+          enum: [generate_filler, static_filler, silent, passthrough]
+        on_resolve:
+          type: string
+          enum: [generate_response, response_in_result, add_to_context, fire_and_forget]
+        static_filler:
+          type: string
+          description: Required if on_call is static_filler
+        tags:
+          type: array
+          items:
+            type: string
+
+    UpdateToolRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+        delivery:
+          type: object
+        trigger_type:
+          type: string
+        on_call:
+          type: string
+        on_resolve:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    Tool:
+      type: object
+      properties:
+        tool_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+        delivery:
+          type: object
+        trigger_type:
+          type: string
+        origin:
+          type: string
+        on_call:
+          type: string
+        on_resolve:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListToolsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # GUARDRAIL SCHEMAS
+    # ==========================================================================
+    CreateGuardrailRequest:
+      type: object
+      required:
+        - guardrail_name
+        - guardrail_prompt
+      properties:
+        guardrail_name:
+          type: string
+          maxLength: 100
+          pattern: '^[a-zA-Z0-9_]+$'
+        guardrail_prompt:
+          type: string
+          maxLength: 1000
+          description: Behavioral boundary definition
+        modality:
+          type: string
+          enum: [verbal, visual]
+          default: verbal
+        callback_url:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 32
+        app_message:
+          type: boolean
+          default: false
+          description: Enable real-time events when triggered
+
+    UpdateGuardrailRequest:
+      type: object
+      properties:
+        guardrail_name:
+          type: string
+        guardrail_prompt:
+          type: string
+        modality:
+          type: string
+        callback_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        app_message:
+          type: boolean
+
+    Guardrail:
+      type: object
+      properties:
+        uuid:
+          type: string
+        guardrail_name:
+          type: string
+        guardrail_prompt:
+          type: string
+        modality:
+          type: string
+        callback_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        app_message:
+          type: boolean
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListGuardrailsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Guardrail'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # OBJECTIVES SCHEMAS
+    # ==========================================================================
+    CreateObjectivesRequest:
+      type: object
+      required:
+        - objectives
+      properties:
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectiveItem'
+
+    ObjectiveItem:
+      type: object
+      required:
+        - objective_name
+        - objective_prompt
+      properties:
+        objective_name:
+          type: string
+          pattern: '^[^ ]+$'
+          description: No spaces allowed
+        objective_prompt:
+          type: string
+          description: Goal definition
+        confirmation_mode:
+          type: string
+          enum: [auto, manual]
+          default: auto
+        output_variables:
+          type: array
+          items:
+            type: string
+          description: Variables to extract
+        modality:
+          type: string
+          enum: [verbal, visual]
+          default: verbal
+        next_conditional_objectives:
+          type: object
+          additionalProperties:
+            type: string
+          description: Conditional branching
+        next_required_objective:
+          type: string
+          description: Required next objective
+        callback_url:
+          type: string
+          format: uri
+
+    CreateObjectivesResponse:
+      type: object
+      properties:
+        objectives_id:
+          type: string
+        status:
+          type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    UpdateObjectivesRequest:
+      type: object
+      properties:
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectiveItem'
+
+    Objectives:
+      type: object
+      properties:
+        objectives_id:
+          type: string
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectiveItem'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListObjectivesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objectives'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # DOCUMENT SCHEMAS
+    # ==========================================================================
+    CreateDocumentRequest:
+      type: object
+      required:
+        - document_url
+      properties:
+        document_url:
+          type: string
+          format: uri
+          description: File URL or website to crawl
+        document_name:
+          type: string
+        callback_url:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+        crawl:
+          type: object
+          properties:
+            depth:
+              type: integer
+              minimum: 1
+              maximum: 10
+              description: Link levels to crawl
+            max_pages:
+              type: integer
+              minimum: 1
+              maximum: 100
+
+    CreateDocumentResponse:
+      type: object
+      properties:
+        document_id:
+          type: string
+        status:
+          type: string
+          enum: [started, processing, ready, error, recrawling]
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    UpdateDocumentRequest:
+      type: object
+      properties:
+        document_name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    Document:
+      type: object
+      properties:
+        document_id:
+          type: string
+        document_name:
+          type: string
+        document_url:
+          type: string
+        status:
+          type: string
+          enum: [started, processing, ready, error, recrawling]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        error_message:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        crawl_config:
+          type: object
+        crawled_urls:
+          type: array
+          items:
+            type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+        last_crawled_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListDocumentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ==========================================================================
+    # DEPLOYMENT SCHEMAS
+    # ==========================================================================
+    CreateDeploymentRequest:
+      type: object
+      required:
+        - pal_id
+        - channel
+      properties:
+        pal_id:
+          type: string
+        channel:
+          type: string
+          enum: [widget, embed, landing-page]
+        name:
+          type: string
+        password:
+          type: string
+          description: Access restriction
+        customization:
+          type: object
+          additionalProperties: true
+          description: Visual and conversation settings
+        limits:
+          type: object
+          properties:
+            max_calls:
+              type: integer
+            max_duration:
+              type: integer
+        allowed_origins:
+          type: array
+          items:
+            type: string
+          description: Origins for widget/embed
+
+    UpdateDeploymentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        customization:
+          type: object
+          additionalProperties: true
+        limits:
+          type: object
+        allowed_origins:
+          type: array
+          items:
+            type: string
+
+    Deployment:
+      type: object
+      properties:
+        deployment_id:
+          type: string
+        pal_id:
+          type: string
+        channel:
+          type: string
+        status:
+          type: string
+        name:
+          type: string
+        has_password:
+          type: boolean
+        customization:
+          type: object
+          additionalProperties: true
+        thumbnail_video_url:
+          type: string
+          format: uri
+        thumbnail_image_url:
+          type: string
+          format: uri
+        limits:
+          type: object
+        allowed_origins:
+          type: array
+          items:
+            type: string
+        usage_total:
+          type: integer
+        usage_today:
+          type: integer
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    ListDeploymentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deployment'
+        total_count:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
