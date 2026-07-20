@@ -37,6 +37,8 @@ github.com/mattn/go-isatty v0.0.23 h1:cYwCQTQf3HB6xUC+BtyCLZNr7IzbOmoZbmssVNzSyi
 github.com/mattn/go-isatty v0.0.23/go.mod h1:nMCL3Zebbrt45jsMDgnfIwz6ydEQApk5oEI3HqDio6A=
 github.com/ogen-go/ogen v1.23.0 h1:QaWeKm2KZ2zy7NkqqO1Vdl5idNqlG+svxdgwVAX+zbo=
 github.com/ogen-go/ogen v1.23.0/go.mod h1:bwwvC3AmCV+LrL5lazyQwwof90402mdcSyI0FOzzpfM=
+github.com/plexusone/omniavatar-core v0.2.0 h1:5SVl4hUATxQNLu0ECv0s68rBItmxA0pxx0whlEn+sxE=
+github.com/plexusone/omniavatar-core v0.2.0/go.mod h1:vp9MofUv8Z0LP8lBk1NsGPlO1XxcZkoJSTkH3wHoh6k=
 github.com/plexusone/omnillm-core v0.18.0 h1:JnONiIe08W+83hsyxyFHSouk0jkBY2o7/SzvJxF3mYI=
 github.com/plexusone/omnillm-core v0.18.0/go.mod h1:180U/oa67fly3+T3h1sL/pBMvcjIKR+bvSEkAGnalMY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

@@ -25,6 +25,7 @@ require (
 	github.com/grokify/sogo v0.15.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.23 // indirect
+	github.com/plexusone/omniavatar-core v0.2.0 // render adapter uses v0.3.0 via workspace; bump on release
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
