@@ -6,8 +6,12 @@
   "commitConvention": "conventional",
   "maintainers": ["plexusone"],
   "unreleased": {
+    "added": [
+      { "description": "`omniavatar` subpackage: an OmniAvatar render adapter implementing the omniavatar-core `render.Provider` interface on top of this SDK; depends only on omniavatar-core", "commit": "e60b13a" }
+    ],
     "documentation": [
-      { "description": "Interactive API reference via Scalar at https://plexusone.github.io/tavus-go/", "commit": "627bc06" }
+      { "description": "Interactive API reference via Scalar at https://plexusone.github.io/tavus-go/", "commit": "627bc06" },
+      { "description": "README OmniAvatar Integration section" }
     ],
     "infrastructure": [
       { "description": "GitHub Actions workflow for GitHub Pages deployment", "commit": "627bc06" }

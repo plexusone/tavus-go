@@ -368,6 +368,28 @@ res, err := apiClient.SomeOperation(ctx, params)
 
 This regenerates the client from `openapi/openapi.yaml` and applies post-processing fixes.
 
+## OmniAvatar Integration
+
+The [`omniavatar`](omniavatar/) subpackage implements the provider-agnostic
+[OmniAvatar](https://github.com/plexusone/omniavatar) **render** interface
+(`render.Provider`) on top of this SDK, so Tavus video generation can be used
+behind the OmniAvatar abstraction. It depends only on
+[`omniavatar-core`](https://github.com/plexusone/omniavatar-core).
+
+```go
+import tavusomni "github.com/plexusone/tavus-go/omniavatar"
+
+p, err := tavusomni.NewRenderProvider(tavusomni.RenderConfig{
+    APIKey: os.Getenv("TAVUS_API_KEY"),
+})
+```
+
+Tavus has no audio upload API, so supply a publicly fetchable
+`render.GenerateRequest.AudioURL`. Provider adapters live in the provider SDK
+repos so all Tavus-specific knowledge stays here; the real-time **live** (CVI)
+adapter, which requires LiveKit, lives in the batteries-included
+[`omniavatar`](https://github.com/plexusone/omniavatar) package.
+
 ## License
 
 MIT
