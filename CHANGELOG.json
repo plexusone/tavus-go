@@ -5,19 +5,31 @@
   "versioning": "semver",
   "commitConvention": "conventional",
   "maintainers": ["plexusone"],
-  "unreleased": {
-    "added": [
-      { "description": "`omniavatar` subpackage: an OmniAvatar render adapter implementing the omniavatar-core `render.Provider` interface on top of this SDK; depends only on omniavatar-core", "commit": "e60b13a" }
-    ],
-    "documentation": [
-      { "description": "Interactive API reference via Scalar at https://plexusone.github.io/tavus-go/", "commit": "627bc06" },
-      { "description": "README OmniAvatar Integration section" }
-    ],
-    "infrastructure": [
-      { "description": "GitHub Actions workflow for GitHub Pages deployment", "commit": "627bc06" }
-    ]
-  },
+  "unreleased": {},
   "releases": [
+    {
+      "version": "v0.3.0",
+      "date": "2026-07-19",
+      "highlights": [
+        { "description": "OmniAvatar render adapter — use Tavus video generation behind the provider-agnostic OmniAvatar interfaces" },
+        { "description": "Interactive Scalar API reference deployed to GitHub Pages" }
+      ],
+      "added": [
+        { "description": "`omniavatar` subpackage: an OmniAvatar render adapter implementing the omniavatar-core `render.Provider` interface on top of this SDK; depends only on omniavatar-core", "commit": "e60b13a" }
+      ],
+      "dependencies": [
+        { "description": "Require `omniavatar-core` v0.3.0 for the render adapter", "commit": "d555c7e" },
+        { "description": "Bump `github.com/ogen-go/ogen` to v1.23.0", "commit": "d5966c6" }
+      ],
+      "documentation": [
+        { "description": "Interactive API reference via Scalar at https://plexusone.github.io/tavus-go/", "commit": "627bc06" },
+        { "description": "README OmniAvatar Integration section", "commit": "9d6f398" }
+      ],
+      "infrastructure": [
+        { "description": "GitHub Actions workflow for GitHub Pages (Scalar) deployment", "commit": "627bc06" },
+        { "description": "Bump GitHub Actions: deploy-pages v5, upload-pages-artifact v5, checkout v7, configure-pages v6", "commit": "cc30789" }
+      ]
+    },
     {
       "version": "v0.2.0",
       "date": "2025-07-06",

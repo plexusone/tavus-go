@@ -31,6 +31,9 @@ Go SDK for the [Tavus API](https://docs.tavus.io/).
 
 Tavus provides conversational video interfaces (CVI), video generation, and AI avatar management capabilities.
 
+- **Interactive API reference:** [plexusone.github.io/tavus-go](https://plexusone.github.io/tavus-go/)
+- **OmniAvatar render adapter:** use Tavus video generation behind the provider-agnostic [OmniAvatar](https://github.com/plexusone/omniavatar) interfaces — see [OmniAvatar Integration](#omniavatar-integration)
+
 ## Installation
 
 ```bash
