@@ -3,7 +3,7 @@ module github.com/plexusone/tavus-go
 go 1.26.0
 
 require (
-	github.com/go-faster/errors v0.7.1
+	github.com/go-faster/errors v0.8.0
 	github.com/go-faster/jx v1.2.0
 	github.com/ogen-go/ogen v1.23.0
 	github.com/plexusone/omnillm-core v0.18.0
