@@ -7,10 +7,12 @@ require (
 	github.com/go-faster/jx v1.2.0
 	github.com/ogen-go/ogen v1.24.0
 	github.com/plexusone/omnillm-core v0.18.0
-	go.opentelemetry.io/otel v1.45.0
-	go.opentelemetry.io/otel/metric v1.45.0
-	go.opentelemetry.io/otel/trace v1.45.0
+	go.opentelemetry.io/otel v1.47.0
+	go.opentelemetry.io/otel/metric v1.47.0
+	go.opentelemetry.io/otel/trace v1.47.0
 )
+
+require go.opentelemetry.io/otel/log v1.47.0 // indirect
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
